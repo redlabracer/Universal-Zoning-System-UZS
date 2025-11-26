@@ -111,7 +111,8 @@ Report issues on GitHub: https://github.com/redlabracer/Universal-Zoning-System-
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog Value="v1.5 - Updated for game version 1.4.*. Confirmed compatibility with latest game update. NOT SAFE TO REMOVE: Buildings in Universal zones depend on this mod." />
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
-	<ExternalLink Type="github" Url="https://github.com/redlabracer/Universal-Zoning-System--UZS-" />
+	<ExternalLink Type="github" Url="https://github.com/redlabracer/Universal-Zoning-System-UZS" />
+	<ExternalLink Type="discord" Url="https://discord.com/users/533715225195839519" />
 	<!--Supported values Public, Private, Unlisted-->
 	<AccessLevel Value="Public" />
 </Publish>
