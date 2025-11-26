@@ -1,0 +1,8 @@
+{
+    "Name": "UniversalZoningSystem",
+    "DisplayName": "Universal Zoning System (UZS)",
+    "Version": "1.0.0",
+    "Description": "Mix North American and European building styles in the same zones. Create truly diverse cities without theme restrictions!",
+    "Author": "redlabracer",
+    "CanBeDisabled": false
+}
