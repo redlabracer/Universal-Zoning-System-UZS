@@ -18,9 +18,20 @@ namespace UniversalZoningSystem.Systems
         // Batch processing fields
         private NativeArray<Entity> m_EntitiesToProcess;
         private int m_ProcessIndex = 0;
-        private const int BATCH_SIZE = 20; // Reduced from 200 to 20 to prevent freezing
+        private const int BATCH_SIZE = 20;
         private int m_ClonedCount = 0;
         private HashSet<string> m_ExistingPrefabNames = new HashSet<string>();
+
+        // Add delay to ensure AssetDatabase has finished initialization
+        private float m_InitialDelay = 3.0f;
+        private double m_StartTime = 0;
+        private int m_ReadyCheckAttempts = 0;
+        private const int MAX_READY_CHECK_ATTEMPTS = 300; // Increased to allow more time for zone initialization
+        private const float READY_CHECK_INTERVAL = 0.1f;
+        private double m_LastReadyCheck = 0;
+
+        // Store template zone data for post-initialization
+        private Dictionary<string, ZoneData> m_TemplateZoneData = new Dictionary<string, ZoneData>();
 
         // Optimization: Cache zone info
         private struct ZoneMergeInfo
@@ -34,6 +45,8 @@ namespace UniversalZoningSystem.Systems
         {
             base.OnCreate();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            m_StartTime = World.Time.ElapsedTime;
+            m_LastReadyCheck = m_StartTime;
         }
 
         protected override void OnDestroy()
@@ -42,42 +55,98 @@ namespace UniversalZoningSystem.Systems
             {
                 m_EntitiesToProcess.Dispose();
             }
+            
             base.OnDestroy();
         }
 
         protected override void OnUpdate()
         {
+            // Wait for initial delay to ensure AssetDatabase is stable
+            if (World.Time.ElapsedTime - m_StartTime < m_InitialDelay)
+            {
+                return;
+            }
+
             if (m_State == 0)
             {
-                // Wait for prefabs to be loaded
-                var query = GetEntityQuery(ComponentType.ReadOnly<PrefabData>());
-                if (query.CalculateEntityCount() > 0)
+                // Wait for prefabs to be loaded and ensure AssetDatabase is ready
+                var query = GetEntityQuery(ComponentType.ReadOnly<PrefabData>(), ComponentType.ReadOnly<ZoneData>());
+                if (query.CalculateEntityCount() > 10)
                 {
+                    UnityEngine.Debug.Log($"UZS: Starting zone creation after {World.Time.ElapsedTime - m_StartTime:F1}s delay");
                     CreateUniversalZones();
                     m_State = 1;
+                    m_ReadyCheckAttempts = 0;
+                    m_LastReadyCheck = World.Time.ElapsedTime;
                 }
             }
             else if (m_State == 1)
             {
+                // Rate limit ready checks
+                if (World.Time.ElapsedTime - m_LastReadyCheck < READY_CHECK_INTERVAL)
+                {
+                    return;
+                }
+                
+                m_LastReadyCheck = World.Time.ElapsedTime;
+                m_ReadyCheckAttempts++;
+                
                 if (CheckUniversalZonesReady())
                 {
+                    UnityEngine.Debug.Log($"UZS: All universal zones ready after {m_ReadyCheckAttempts} attempts");
                     StartMerge();
-                    // Run the entire merge process synchronously to avoid gameplay lag
                     ProcessMergeBatch();
-                    m_State = 3; // Done
-                    Enabled = false; // Disable system
+                    m_State = 2;
+                    Enabled = false;
+                }
+                else if (m_ReadyCheckAttempts >= MAX_READY_CHECK_ATTEMPTS)
+                {
+                    UnityEngine.Debug.LogError($"UZS: Universal zones failed to initialize after {MAX_READY_CHECK_ATTEMPTS} attempts ({MAX_READY_CHECK_ATTEMPTS * READY_CHECK_INTERVAL}s). System disabled.");
+                    UnityEngine.Debug.LogError($"UZS: Created zones: {m_CreatedPrefabs.Count}, Ready zones: {m_UniversalZoneEntities.Count}");
+                    
+                    // Try to fix zones with invalid AreaType by copying from template
+                    FixInvalidZones();
+                    
+                    // Log which zones failed to initialize
+                    foreach (var kvp in m_CreatedPrefabs)
+                    {
+                        if (!m_UniversalZoneEntities.ContainsKey(kvp.Key))
+                        {
+                            Entity e = m_PrefabSystem.GetEntity(kvp.Value);
+                            if (e == Entity.Null)
+                            {
+                                UnityEngine.Debug.LogError($"UZS: Zone '{kvp.Key}' has null entity");
+                            }
+                            else if (!EntityManager.HasComponent<ZoneData>(e))
+                            {
+                                UnityEngine.Debug.LogError($"UZS: Zone '{kvp.Key}' missing ZoneData component");
+                            }
+                            else
+                            {
+                                var zoneData = EntityManager.GetComponentData<ZoneData>(e);
+                                UnityEngine.Debug.LogError($"UZS: Zone '{kvp.Key}' has invalid AreaType: {zoneData.m_AreaType}");
+                            }
+                        }
+                    }
+                    
+                    m_State = 2;
+                    Enabled = false;
+                }
+                else if (m_ReadyCheckAttempts % 20 == 0)
+                {
+                    UnityEngine.Debug.Log($"UZS: Waiting for universal zones... Attempt {m_ReadyCheckAttempts}/{MAX_READY_CHECK_ATTEMPTS}, Ready: {m_UniversalZoneEntities.Count}/{m_CreatedPrefabs.Count}");
                 }
             }
         }
 
         private void CreateUniversalZones()
         {
+            UnityEngine.Debug.Log("UZS: Beginning Universal Zone creation...");
+            
             // Build lookup of existing zones
             var zoneLookup = new Dictionary<string, Entity>();
             
-            // FIX: Query PrefabData instead of ZonePrefab component
-            // ZonePrefab is a managed type, not a component data struct, so we must query PrefabData
-            var zoneQuery = GetEntityQuery(ComponentType.ReadOnly<PrefabData>());
+            var zoneQuery = GetEntityQuery(ComponentType.ReadOnly<PrefabData>(), ComponentType.ReadOnly<ZoneData>());
             var zoneEntities = zoneQuery.ToEntityArray(Allocator.Temp);
             
             foreach (var entity in zoneEntities)
@@ -88,6 +157,8 @@ namespace UniversalZoningSystem.Systems
                     if (!zoneLookup.ContainsKey(prefab.name))
                     {
                         zoneLookup.Add(prefab.name, entity);
+                        var zoneData = EntityManager.GetComponentData<ZoneData>(entity);
+                        UnityEngine.Debug.Log($"UZS: Found zone '{prefab.name}' with AreaType: {zoneData.m_AreaType}");
                     }
                 }
             }
@@ -105,6 +176,7 @@ namespace UniversalZoningSystem.Systems
                 { UniversalZoneDefinitions.Universal_Mixed, "NA Residential Mixed" }
             };
 
+            int createdCount = 0;
             foreach (var kvp in zonesToCreate)
             {
                 Entity templateEntity = Entity.Null;
@@ -113,16 +185,39 @@ namespace UniversalZoningSystem.Systems
                     var sourcePrefab = m_PrefabSystem.GetPrefab<ZonePrefab>(templateEntity);
                     if (sourcePrefab != null)
                     {
-                        // Create the new Universal Zone based on the NA template
-                        var newPrefab = Object.Instantiate(sourcePrefab);
-                        newPrefab.name = kvp.Key;
-                        
-                        // Customize the UI to show it's Universal
-                        // (In a real mod, you'd change the icon or color here)
-                        
-                        m_PrefabSystem.AddPrefab(newPrefab);
-                        m_CreatedPrefabs[kvp.Key] = newPrefab;
-                        UnityEngine.Debug.Log($"UZS: Created universal zone '{kvp.Key}' from '{kvp.Value}'");
+                        // Verify template has ZoneData before cloning
+                        if (!EntityManager.HasComponent<ZoneData>(templateEntity))
+                        {
+                            UnityEngine.Debug.LogWarning($"UZS: Template zone '{kvp.Value}' missing ZoneData component, skipping '{kvp.Key}'");
+                            continue;
+                        }
+
+                        // Get and store the source zone data
+                        var sourceZoneData = EntityManager.GetComponentData<ZoneData>(templateEntity);
+                        if (sourceZoneData.m_AreaType == Game.Zones.AreaType.None)
+                        {
+                            UnityEngine.Debug.LogWarning($"UZS: Template zone '{kvp.Value}' has invalid AreaType.None, skipping '{kvp.Key}'");
+                            continue;
+                        }
+
+                        // Store template zone data for later use
+                        m_TemplateZoneData[kvp.Key] = sourceZoneData;
+
+                        try
+                        {
+                            // Create the new Universal Zone based on the NA template
+                            var newPrefab = Object.Instantiate(sourcePrefab);
+                            newPrefab.name = kvp.Key;
+                            
+                            m_PrefabSystem.AddPrefab(newPrefab);
+                            m_CreatedPrefabs[kvp.Key] = newPrefab;
+                            createdCount++;
+                            UnityEngine.Debug.Log($"UZS: Created universal zone '{kvp.Key}' from '{kvp.Value}' with AreaType: {sourceZoneData.m_AreaType}");
+                        }
+                        catch (System.Exception ex)
+                        {
+                            UnityEngine.Debug.LogError($"UZS: Failed to create zone '{kvp.Key}': {ex.Message}");
+                        }
                     }
                 }
                 else
@@ -130,18 +225,121 @@ namespace UniversalZoningSystem.Systems
                     UnityEngine.Debug.LogError($"UZS: Could not find template zone '{kvp.Value}' for '{kvp.Key}'");
                 }
             }
+            
+            UnityEngine.Debug.Log($"UZS: Zone creation complete. Created {createdCount}/{zonesToCreate.Count} zones.");
+        }
+
+        private void FixInvalidZones()
+        {
+            UnityEngine.Debug.Log("UZS: Attempting to fix zones with invalid AreaType...");
+            int fixedCount = 0;
+
+            foreach (var kvp in m_CreatedPrefabs)
+            {
+                Entity e = m_PrefabSystem.GetEntity(kvp.Value);
+                if (e != Entity.Null && EntityManager.HasComponent<ZoneData>(e))
+                {
+                    var zoneData = EntityManager.GetComponentData<ZoneData>(e);
+                    
+                    // If zone has invalid AreaType and we have template data, apply it
+                    if (zoneData.m_AreaType == Game.Zones.AreaType.None && m_TemplateZoneData.ContainsKey(kvp.Key))
+                    {
+                        var templateData = m_TemplateZoneData[kvp.Key];
+                        EntityManager.SetComponentData(e, templateData);
+                        fixedCount++;
+                        UnityEngine.Debug.Log($"UZS: Fixed zone '{kvp.Key}' by applying template AreaType: {templateData.m_AreaType}");
+                        
+                        // Add to ready list
+                        m_UniversalZoneEntities[kvp.Key] = e;
+                    }
+                }
+            }
+
+            if (fixedCount > 0)
+            {
+                UnityEngine.Debug.Log($"UZS: Fixed {fixedCount} zones with invalid AreaType");
+            }
         }
 
         private bool CheckUniversalZonesReady()
         {
-            if (m_CreatedPrefabs.Count == 0) return false;
+            if (m_CreatedPrefabs.Count == 0)
+            {
+                UnityEngine.Debug.LogWarning("UZS: No zones were created to check");
+                return false;
+            }
+            
             bool allReady = true;
+            int readyCount = 0;
+            
             foreach(var kvp in m_CreatedPrefabs)
             {
+                // Skip if already validated
+                if (m_UniversalZoneEntities.ContainsKey(kvp.Key))
+                {
+                    readyCount++;
+                    continue;
+                }
+                
                 Entity e = m_PrefabSystem.GetEntity(kvp.Value);
-                if (e == Entity.Null) allReady = false;
-                else m_UniversalZoneEntities[kvp.Key] = e;
+                if (e == Entity.Null)
+                {
+                    allReady = false;
+                    continue;
+                }
+                
+                // Verify the entity has ZoneData
+                if (!EntityManager.HasComponent<ZoneData>(e))
+                {
+                    allReady = false;
+                    continue;
+                }
+                
+                // Check if ZoneData has valid AreaType
+                var zoneData = EntityManager.GetComponentData<ZoneData>(e);
+                if (zoneData.m_AreaType == Game.Zones.AreaType.None)
+                {
+                    // Try to fix immediately if we have template data
+                    if (m_TemplateZoneData.ContainsKey(kvp.Key))
+                    {
+                        var templateData = m_TemplateZoneData[kvp.Key];
+                        EntityManager.SetComponentData(e, templateData);
+                        UnityEngine.Debug.Log($"UZS: Fixed zone '{kvp.Key}' by applying template AreaType: {templateData.m_AreaType}");
+                        
+                        // Verify the fix worked
+                        zoneData = EntityManager.GetComponentData<ZoneData>(e);
+                        if (zoneData.m_AreaType != Game.Zones.AreaType.None)
+                        {
+                            m_UniversalZoneEntities[kvp.Key] = e;
+                            readyCount++;
+                            continue;
+                        }
+                    }
+                    
+                    // Still invalid after fix attempt
+                    if (m_ReadyCheckAttempts == 1 || m_ReadyCheckAttempts % 50 == 0)
+                    {
+                        UnityEngine.Debug.LogWarning($"UZS: Universal zone '{kvp.Key}' has invalid AreaType.None (attempt {m_ReadyCheckAttempts})");
+                    }
+                    allReady = false;
+                    continue;
+                }
+                
+                // Zone is valid - cache it
+                if (m_ReadyCheckAttempts == 1 || !m_UniversalZoneEntities.ContainsKey(kvp.Key))
+                {
+                    UnityEngine.Debug.Log($"UZS: Zone '{kvp.Key}' ready with AreaType: {zoneData.m_AreaType}");
+                }
+                m_UniversalZoneEntities[kvp.Key] = e;
+                readyCount++;
             }
+            
+            // Log progress
+            if (m_ReadyCheckAttempts % 20 == 0 && !allReady)
+            {
+                UnityEngine.Debug.Log($"UZS: Ready check: {readyCount}/{m_CreatedPrefabs.Count} zones ready");
+            }
+            
             return allReady;
         }
 
@@ -171,6 +369,7 @@ namespace UniversalZoningSystem.Systems
             
             // Store entities in a persistent array to process over multiple frames
             m_EntitiesToProcess = query.ToEntityArray(Allocator.Persistent);
+            
             m_ProcessIndex = 0;
             m_ClonedCount = 0;
             
@@ -186,6 +385,10 @@ namespace UniversalZoningSystem.Systems
             UnityEngine.Debug.Log($"UZS: Starting synchronous merge of {m_EntitiesToProcess.Length} entities...");
             long startTime = System.Diagnostics.Stopwatch.GetTimestamp();
 
+            int skippedAlreadyUniversal = 0;
+            int skippedAlreadyExists = 0;
+            int skippedNoMatch = 0;
+
             while (m_ProcessIndex < m_EntitiesToProcess.Length)
             {
                 Entity entity = m_EntitiesToProcess[m_ProcessIndex];
@@ -196,10 +399,18 @@ namespace UniversalZoningSystem.Systems
                 if (prefab == null) continue;
 
                 // CRITICAL FIX: Skip if already a Universal clone to prevent exponential growth
-                if (prefab.name.StartsWith("Universal_")) continue;
+                if (prefab.name.StartsWith("Universal_"))
+                {
+                    skippedAlreadyUniversal++;
+                    continue;
+                }
 
                 // CRITICAL FIX: Skip if the target Universal prefab already exists
-                if (m_ExistingPrefabNames.Contains("Universal_" + prefab.name)) continue;
+                if (m_ExistingPrefabNames.Contains("Universal_" + prefab.name))
+                {
+                    skippedAlreadyExists++;
+                    continue;
+                }
 
                 var spawnableData = EntityManager.GetComponentData<SpawnableBuildingData>(entity);
                 Entity zoneEntity = spawnableData.m_ZonePrefab;
@@ -211,38 +422,45 @@ namespace UniversalZoningSystem.Systems
                     {
                         if (m_CreatedPrefabs.TryGetValue(info.TargetUniversalZone, out ZonePrefab universalZonePrefab))
                         {
-                            // Check probability settings
-                            if (UnityEngine.Random.Range(0, 100) >= info.Probability)
+                            try
                             {
-                                continue;
-                            }
-
-                            // Clone the managed prefab
-                            var newPrefab = Object.Instantiate(prefab);
-                            newPrefab.name = "Universal_" + prefab.name;
-                            
-                            // Update the SpawnableBuilding component on the managed prefab
-                            // This ensures the entity is created with the correct zone from the start
-                            if (newPrefab.TryGet<SpawnableBuilding>(out var spawnable))
-                            {
-                                spawnable.m_ZoneType = universalZonePrefab;
+                                // Clone the managed prefab
+                                var newPrefab = Object.Instantiate(prefab);
+                                newPrefab.name = "Universal_" + prefab.name;
                                 
-                                // Register it with the system
-                                m_PrefabSystem.AddPrefab(newPrefab);
-                                m_ExistingPrefabNames.Add(newPrefab.name); // Add to cache
-                                m_ClonedCount++;
+                                // Update the SpawnableBuilding component on the managed prefab
+                                // This ensures the entity is created with the correct zone from the start
+                                if (newPrefab.TryGet<SpawnableBuilding>(out var spawnable))
+                                {
+                                    spawnable.m_ZoneType = universalZonePrefab;
+                                    
+                                    // Register it with the system
+                                    m_PrefabSystem.AddPrefab(newPrefab);
+                                    m_ExistingPrefabNames.Add(newPrefab.name); // Add to cache
+                                    m_ClonedCount++;
+                                }
+                                else
+                                {
+                                    UnityEngine.Debug.LogWarning($"UZS: Could not find SpawnableBuilding component on cloned prefab {newPrefab.name}");
+                                }
                             }
-                            else
+                            catch (System.Exception ex)
                             {
-                                UnityEngine.Debug.LogWarning($"UZS: Could not find SpawnableBuilding component on cloned prefab {newPrefab.name}");
+                                UnityEngine.Debug.LogError($"UZS: Failed to clone building '{prefab.name}': {ex.Message}");
                             }
                         }
+                    }
+                    else
+                    {
+                        skippedNoMatch++;
                     }
                 }
             }
 
             double elapsed = (System.Diagnostics.Stopwatch.GetTimestamp() - startTime) / (double)System.Diagnostics.Stopwatch.Frequency;
-            UnityEngine.Debug.Log($"UZS: Finished cloning. Total cloned: {m_ClonedCount}. Time taken: {elapsed:F2} seconds.");
+            UnityEngine.Debug.Log($"UZS: Finished cloning. Total cloned: {m_ClonedCount}. " +
+                $"Skipped: {skippedAlreadyUniversal} already universal, {skippedAlreadyExists} already exists, " +
+                $"{skippedNoMatch} no zone match. Time taken: {elapsed:F2} seconds.");
             
             m_EntitiesToProcess.Dispose();
         }
@@ -270,7 +488,6 @@ namespace UniversalZoningSystem.Systems
                             TargetUniversalZone = target,
                             Probability = GetProbability(zoneName, setting)
                         };
-                        // UnityEngine.Debug.Log($"UZS: Mapped zone '{zoneName}' to '{target}'");
                     }
                     else
                     {
@@ -324,6 +541,12 @@ namespace UniversalZoningSystem.Systems
 
         private int GetProbability(string zoneName, Setting? setting)
         {
+            // IMPORTANT: Probability should affect spawn rates, not prefab creation
+            // Always return 100 here so ALL building variants are created
+            // The probability settings should be used elsewhere for spawn weighting
+            return 100;
+            
+            /* Original probability logic - commented out as it causes missing assets
             if (setting == null) return 100;
             
             if (zoneName.Contains("NA Residential Low")) return setting.NALowRes;
@@ -349,6 +572,7 @@ namespace UniversalZoningSystem.Systems
             }
             
             return 100;
+            */
         }
     }
 }

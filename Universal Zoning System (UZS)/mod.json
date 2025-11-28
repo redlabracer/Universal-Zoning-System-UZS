@@ -1,8 +1,8 @@
 {
     "Name": "UniversalZoningSystem",
     "DisplayName": "Universal Zoning System (UZS)",
-    "Version": "1.0.0",
-    "Description": "Mix North American and European building styles in the same zones. Create truly diverse cities without theme restrictions!",
+    "Version": "1.1.0",
+    "Description": "Mix North American and European building styles in the same zones. Create truly diverse cities without theme restrictions! Automatically detects and supports all zoning types from regional packs and DLC. Compatible with Zone Organizer by Mimonsi.",
     "Author": "redlabracer",
     "CanBeDisabled": false
 }

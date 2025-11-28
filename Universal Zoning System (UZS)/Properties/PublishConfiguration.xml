@@ -4,7 +4,7 @@
 	<!--Name of the mod to display to players-->
 	<DisplayName Value="Universal Zoning System (UZS)" />
 	<!--Short description of the mod-->
-	<ShortDescription Value="Mix North American and European building styles in the same zones for truly diverse cities!" />
+	<ShortDescription Value="Mix North American and European building styles in the same zones for truly diverse cities! Supports DLC zones and Zone Organizer." />
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 	<LongDescription>
 # Universal Zoning System (UZS)
@@ -12,11 +12,13 @@
 ## ⚠️ BETA DISCLAIMER ⚠️
 
 **This mod is in early testing phase. Please note:**
-- ⚠️ Not fully tested with all game scenarios
-- ⚠️ May cause issues with existing savegames
-- ⚠️ Backup your saves before using
-- ⚠️ Use at your own risk
-- 🐛 Please report bugs on GitHub
+- Not fully tested with all game scenarios
+- May cause issues with existing savegames
+- Backup your saves before using
+- Use at your own risk
+- Please report bugs on GitHub
+
+---
 
 ## ⚠️ NOT SAFE TO REMOVE
 
@@ -44,12 +46,24 @@ The Universal Zoning System addresses a restriction in the base game where zonin
 
 UZS creates a unified "Universal" zoning palette. When you zone "Universal Low Density Residential," the game can randomly spawn a Victorian NA home next to a Modern EU cottage, creating organic diversity.
 
+**The mod automatically detects and integrates zoning types from:**
+- Base game themes (North American and European)
+- Region packs (e.g., Beach Properties, Urban Promenades)
+- All installed DLCs and content creator packs
+- Custom zoning types added by other mods
+
+---
+
 ## Features
 
 - **8 Universal Zone Types**: New zones that accept both NA and EU buildings
+- **Automatic DLC Detection**: Works with all region packs, DLCs, and custom content
+- **Zone Organizer Compatible**: Works seamlessly with Zone Organizer by Mimonsi for enhanced zone management
 - **Customizable Probabilities**: Adjust spawn chances for different building types through mod settings
 - **No Theme Switching**: Build mixed-style neighborhoods without constantly changing themes
 - **Seamless Integration**: Works with existing saves and other mods
+
+---
 
 ## Available Universal Zones
 
@@ -62,9 +76,21 @@ UZS creates a unified "Universal" zoning palette. When you zone "Universal Low D
 - Universal Low Density Commercial
 - Universal High Density Commercial
 
+---
+
+## Compatibility
+
+✅ **Works with Zone Organizer by Mimonsi** - Fully compatible for enhanced zone management and organization
+
+✅ **Region Packs &amp; DLCs** - Automatically detects and integrates buildings from all installed content
+
+---
+
 ## Configuration
 
 Open the mod settings to fine-tune the probability of different building styles appearing in your universal zones. Set any style to 0% to exclude it completely, or 100% for maximum variety!
+
+---
 
 ## How to Use
 
@@ -75,22 +101,20 @@ Open the mod settings to fine-tune the probability of different building styles 
 5. Zone as normal - mixed buildings will spawn automatically!
 6. Adjust probabilities in mod settings if desired
 
-## ⚠️ Important: Removal Warning
-
-This mod modifies core game zoning data. Buildings created in Universal zones depend on this mod to function correctly. Removing the mod without first converting all zones back to standard zones will break those buildings and may corrupt your save.
-
-**Think of this mod as a permanent architectural expansion pack for your city.**
+---
 
 ## Known Issues
 
 - Still in testing phase
 - Potential compatibility issues with other zone mods
 - May affect game performance in large cities
-- **Cannot be safely removed once buildings are placed in Universal zones**
+- Cannot be safely removed once buildings are placed in Universal zones
+
+---
 
 ## Support
 
-Report issues on GitHub: https://github.com/redlabracer/Universal-Zoning-System--UZS-
+Report issues on GitHub: https://github.com/redlabracer/Universal-Zoning-System-UZS
 	</LongDescription>
 	<!--Thumbnail-->
 	<Thumbnail Value="Properties/Thumbnail.png" />
@@ -99,9 +123,9 @@ Report issues on GitHub: https://github.com/redlabracer/Universal-Zoning-System-
 	<!--Tag, can be set multiple times-->
 	<Tag Value="Code Mod" />
 	<!--Link to the forum post where the mod can be discussed-->
-	<ForumLink Value="" />
+	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/universal-zoning-system-uzs.1882199/" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.5" />
+	<ModVersion Value="1.9.1" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.4.*" />
 	<!--Dependency for the mod, can be set multiple times-->
@@ -109,7 +133,27 @@ Report issues on GitHub: https://github.com/redlabracer/Universal-Zoning-System-
 	<!--Required DLC, can be set multiple times. Supported values are "Landmark Buildings", "San Fransisco Set", "Beach Properties", "Urban Promenades", "Modern Architecture"-->
 	<RequiredDLC Value="" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-	<ChangeLog Value="v1.5 - Updated for game version 1.4.*. Confirmed compatibility with latest game update. NOT SAFE TO REMOVE: Buildings in Universal zones depend on this mod." />
+	<ChangeLog Value="v1.9.2- **v1.9.2 - Critical Zone Initialization Fix**
+
+🔧 **Fixed Critical Issues:**
+- Fixed "Universal zones failed to initialize after 100 attempts" error
+- Fixed invalid AreaType.None causing Zone Organizer compatibility issues
+- Universal zones now properly inherit ZoneData from template zones
+- Improved zone initialization reliability and stability
+
+⚡ **Improvements:**
+- Extended zone initialization timeout to 30 seconds (300 attempts)
+- Added automatic zone repair system for zones with invalid AreaType
+- Improved zone ready-check logic with better error recovery
+- Added detailed diagnostic logging for troubleshooting
+- Rate-limited zone checks to reduce performance impact
+
+✅ **Compatibility:**
+- Full compatibility with Zone Organizer mod restored
+- Universal zones are now properly recognized by all zone-related mods
+- Zones maintain proper AreaType throughout game session
+
+This update resolves the main initialization issues reported by users. Please report any remaining issues on GitHub!" />
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 	<ExternalLink Type="github" Url="https://github.com/redlabracer/Universal-Zoning-System-UZS" />
 	<ExternalLink Type="discord" Url="https://discord.com/users/533715225195839519" />
