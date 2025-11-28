@@ -125,7 +125,7 @@ Report issues on GitHub: https://github.com/redlabracer/Universal-Zoning-System-
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/universal-zoning-system-uzs.1882199/" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.9.1" />
+	<ModVersion Value="1.9.2" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.4.*" />
 	<!--Dependency for the mod, can be set multiple times-->
@@ -133,10 +133,10 @@ Report issues on GitHub: https://github.com/redlabracer/Universal-Zoning-System-
 	<!--Required DLC, can be set multiple times. Supported values are "Landmark Buildings", "San Fransisco Set", "Beach Properties", "Urban Promenades", "Modern Architecture"-->
 	<RequiredDLC Value="" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-	<ChangeLog Value="v1.9.2- **v1.9.2 - Critical Zone Initialization Fix**
+	<ChangeLog Value="**v1.9.2 - Critical Zone Initialization Fix**
 
 🔧 **Fixed Critical Issues:**
-- Fixed "Universal zones failed to initialize after 100 attempts" error
+- Fixed &quot;Universal zones failed to initialize after 100 attempts&quot; error
 - Fixed invalid AreaType.None causing Zone Organizer compatibility issues
 - Universal zones now properly inherit ZoneData from template zones
 - Improved zone initialization reliability and stability
