@@ -1,6 +1,7 @@
 using Game;
 using Game.Common;
 using Game.Prefabs;
+using Game.SceneFlow;
 using Unity.Entities;
 using Unity.Collections;
 using System.Collections.Generic;
@@ -23,10 +24,10 @@ namespace UniversalZoningSystem.Systems
         private HashSet<string> m_ExistingPrefabNames = new HashSet<string>();
 
         // Add delay to ensure AssetDatabase has finished initialization
-        private float m_InitialDelay = 3.0f;
+        private float m_InitialDelay = 5.0f;
         private double m_StartTime = 0;
         private int m_ReadyCheckAttempts = 0;
-        private const int MAX_READY_CHECK_ATTEMPTS = 300; // Increased to allow more time for zone initialization
+        private const int MAX_READY_CHECK_ATTEMPTS = 300;
         private const float READY_CHECK_INTERVAL = 0.1f;
         private double m_LastReadyCheck = 0;
 
@@ -40,6 +41,10 @@ namespace UniversalZoningSystem.Systems
             public int Probability;
         }
         private Dictionary<Entity, ZoneMergeInfo> m_ZoneMergeInfos = new Dictionary<Entity, ZoneMergeInfo>();
+
+        // Add flag to detect if we're loading a save game
+        private bool m_IsLoadingExistingSave = false;
+        private bool m_HasCheckedSaveState = false;
 
         protected override void OnCreate()
         {
@@ -71,13 +76,49 @@ namespace UniversalZoningSystem.Systems
             {
                 // Wait for prefabs to be loaded and ensure AssetDatabase is ready
                 var query = GetEntityQuery(ComponentType.ReadOnly<PrefabData>(), ComponentType.ReadOnly<ZoneData>());
-                if (query.CalculateEntityCount() > 10)
+                int zoneCount = query.CalculateEntityCount();
+                
+                if (zoneCount > 50)
                 {
-                    UnityEngine.Debug.Log($"UZS: Starting zone creation after {World.Time.ElapsedTime - m_StartTime:F1}s delay");
+                    // NOW check if we're loading an existing save (only check once, after zones are loaded)
+                    if (!m_HasCheckedSaveState)
+                    {
+                        m_HasCheckedSaveState = true;
+                        
+                        // Check if Universal zones already exist - if they do, we're loading a save that already had UZS
+                        var existingUniversalZones = CheckForExistingUniversalZones();
+                        
+                        if (existingUniversalZones > 0)
+                        {
+                            UnityEngine.Debug.Log($"UZS: Detected existing save game with {existingUniversalZones} Universal zones already present. Skipping zone creation to preserve save game integrity and Road Builder compatibility.");
+                            m_IsLoadingExistingSave = true;
+                            m_State = 2;
+                            Enabled = false;
+                            return;
+                        }
+                        
+                        UnityEngine.Debug.Log("UZS: New game or first-time load detected. Will create Universal zones.");
+                    }
+                    
+                    // If we detected we're loading an existing save, don't do anything
+                    if (m_IsLoadingExistingSave)
+                    {
+                        return;
+                    }
+                    
+                    UnityEngine.Debug.Log($"UZS: Starting zone creation with {zoneCount} existing zones after {World.Time.ElapsedTime - m_StartTime:F1}s delay");
                     CreateUniversalZones();
                     m_State = 1;
                     m_ReadyCheckAttempts = 0;
                     m_LastReadyCheck = World.Time.ElapsedTime;
+                }
+                else
+                {
+                    // Log progress every 60 frames to help diagnose startup issues
+                    if (((int)(World.Time.ElapsedTime * 60)) % 60 == 0)
+                    {
+                        UnityEngine.Debug.Log($"UZS: Waiting for game initialization... Zone count: {zoneCount}/50");
+                    }
                 }
             }
             else if (m_State == 1)
@@ -137,6 +178,26 @@ namespace UniversalZoningSystem.Systems
                     UnityEngine.Debug.Log($"UZS: Waiting for universal zones... Attempt {m_ReadyCheckAttempts}/{MAX_READY_CHECK_ATTEMPTS}, Ready: {m_UniversalZoneEntities.Count}/{m_CreatedPrefabs.Count}");
                 }
             }
+        }
+
+        private int CheckForExistingUniversalZones()
+        {
+            int count = 0;
+            
+            var zoneQuery = GetEntityQuery(ComponentType.ReadOnly<PrefabData>(), ComponentType.ReadOnly<ZoneData>());
+            var zoneEntities = zoneQuery.ToEntityArray(Allocator.Temp);
+            
+            foreach (var entity in zoneEntities)
+            {
+                var prefab = m_PrefabSystem.GetPrefab<PrefabBase>(entity);
+                if (prefab != null && prefab.name.StartsWith("Universal_"))
+                {
+                    count++;
+                }
+            }
+            
+            zoneEntities.Dispose();
+            return count;
         }
 
         private void CreateUniversalZones()

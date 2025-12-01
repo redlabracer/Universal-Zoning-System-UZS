@@ -125,7 +125,7 @@ Report issues on GitHub: https://github.com/redlabracer/Universal-Zoning-System-
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/universal-zoning-system-uzs.1882199/" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.9.2" />
+	<ModVersion Value="1.9.3" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.4.*" />
 	<!--Dependency for the mod, can be set multiple times-->
@@ -133,27 +133,26 @@ Report issues on GitHub: https://github.com/redlabracer/Universal-Zoning-System-
 	<!--Required DLC, can be set multiple times. Supported values are "Landmark Buildings", "San Fransisco Set", "Beach Properties", "Urban Promenades", "Modern Architecture"-->
 	<RequiredDLC Value="" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-	<ChangeLog Value="**v1.9.2 - Critical Zone Initialization Fix**
+	<ChangeLog Value="**v1.9.3 - Critical Save Game Crash Fix**
 
-🔧 **Fixed Critical Issues:**
-- Fixed &quot;Universal zones failed to initialize after 100 attempts&quot; error
-- Fixed invalid AreaType.None causing Zone Organizer compatibility issues
-- Universal zones now properly inherit ZoneData from template zones
-- Improved zone initialization reliability and stability
+🔧 **Fixed Critical Crash:**
+- Fixed native Mono runtime crash when loading existing save games
+- Fixed &quot;NullReferenceException&quot; errors during Road Builder deserialization
+- Universal zones no longer recreate on every save load (was creating 6,980+ prefabs each time!)
+- Fixed save game detection timing - now properly checks after zones are loaded
 
-⚡ **Improvements:**
-- Extended zone initialization timeout to 30 seconds (300 attempts)
-- Added automatic zone repair system for zones with invalid AreaType
-- Improved zone ready-check logic with better error recovery
-- Added detailed diagnostic logging for troubleshooting
-- Rate-limited zone checks to reduce performance impact
+⚡ **Major Performance Fix:**
+- Save game loading is now significantly faster (no redundant prefab cloning)
+- Reduced memory usage when loading saves
+- Fixed broken intersections and lanes from Road Builder mod(I hope it works)
+- Eliminated save game corruption from repeated prefab creation
 
 ✅ **Compatibility:**
-- Full compatibility with Zone Organizer mod restored
-- Universal zones are now properly recognized by all zone-related mods
-- Zones maintain proper AreaType throughout game session
+- Full compatibility with Road Builder (Mod ID 87190) restored
+- Works properly with all network/road mods that deserialize save data
+- Existing saves with Universal zones now load safely without crashes
 
-This update resolves the main initialization issues reported by users. Please report any remaining issues on GitHub!" />
+**IMPORTANT:** If you experienced crashes with v1.9.2, this update fixes that. Your saves should now load properly!" />
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 	<ExternalLink Type="github" Url="https://github.com/redlabracer/Universal-Zoning-System-UZS" />
 	<ExternalLink Type="discord" Url="https://discord.com/users/533715225195839519" />
