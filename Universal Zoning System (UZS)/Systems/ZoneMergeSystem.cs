@@ -182,8 +182,10 @@ namespace UniversalZoningSystem.Systems
 
         private int CheckForExistingUniversalZones()
         {
-            int count = 0;
+            int zoneCount = 0;
+            int buildingCount = 0;
             
+            // Check for Universal zones
             var zoneQuery = GetEntityQuery(ComponentType.ReadOnly<PrefabData>(), ComponentType.ReadOnly<ZoneData>());
             var zoneEntities = zoneQuery.ToEntityArray(Allocator.Temp);
             
@@ -192,12 +194,40 @@ namespace UniversalZoningSystem.Systems
                 var prefab = m_PrefabSystem.GetPrefab<PrefabBase>(entity);
                 if (prefab != null && prefab.name.StartsWith("Universal_"))
                 {
-                    count++;
+                    zoneCount++;
+                }
+            }
+            zoneEntities.Dispose();
+            
+            // CRITICAL: Also check for Universal buildings
+            // If zones exist but buildings don't, we need to recreate them
+            if (zoneCount > 0)
+            {
+                var buildingQuery = GetEntityQuery(ComponentType.ReadOnly<PrefabData>(), ComponentType.ReadOnly<SpawnableBuildingData>());
+                var buildingEntities = buildingQuery.ToEntityArray(Allocator.Temp);
+                
+                foreach (var entity in buildingEntities)
+                {
+                    var prefab = m_PrefabSystem.GetPrefab<PrefabBase>(entity);
+                    if (prefab != null && prefab.name.StartsWith("Universal_"))
+                    {
+                        buildingCount++;
+                    }
+                }
+                buildingEntities.Dispose();
+                
+                UnityEngine.Debug.Log($"UZS: Found {zoneCount} Universal zones and {buildingCount} Universal buildings");
+                
+                // Only skip if we have BOTH zones AND a reasonable number of buildings
+                // If buildings are missing, we need to recreate them
+                if (buildingCount < 100)
+                {
+                    UnityEngine.Debug.Log($"UZS: Universal zones exist but only {buildingCount} buildings found (expected ~6980). Will recreate buildings.");
+                    return 0; // Return 0 to trigger recreation
                 }
             }
             
-            zoneEntities.Dispose();
-            return count;
+            return zoneCount;
         }
 
         private void CreateUniversalZones()
