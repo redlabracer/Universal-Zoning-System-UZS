@@ -125,34 +125,32 @@ Report issues on GitHub: https://github.com/redlabracer/Universal-Zoning-System-
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/universal-zoning-system-uzs.1882199/" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.9.3" />
+	<ModVersion Value="1.9.4" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.4.*" />
 	<!--Dependency for the mod, can be set multiple times-->
 	<Dependency Id="" />
-	<!--Required DLC, can be set multiple times. Supported values are "Landmark Buildings", "San Fransisco Set", "Beach Properties", "Urban Promenades", "Modern Architecture"-->
+	<!--Required DLC, can be set multiple times. Supported values are "Landmark Buildings", "San Fransisco Set", "Beach Properties", "Urban Promenoes", "Modern Architecture"-->
 	<RequiredDLC Value="" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-	<ChangeLog Value="**v1.9.3 - Critical Save Game Crash Fix**
+	<ChangeLog Value="**v1.9.4 - Stability and Performance Improvements**
 
-🔧 **Fixed Critical Crash:**
-- Fixed native Mono runtime crash when loading existing save games
-- Fixed &quot;NullReferenceException&quot; errors during Road Builder deserialization
-- Universal zones no longer recreate on every save load (was creating 6,980+ prefabs each time!)
-- Fixed save game detection timing - now properly checks after zones are loaded
+🔧 **Bug Fixes:**
+- Additional stability improvements for save game loading
+- Enhanced error handling in ZoneMergeSystem
+- Fixed edge cases in prefab cloning logic
 
-⚡ **Major Performance Fix:**
-- Save game loading is now significantly faster (no redundant prefab cloning)
-- Reduced memory usage when loading saves
-- Fixed broken intersections and lanes from Road Builder mod(I hope it works)
-- Eliminated save game corruption from repeated prefab creation
+⚡ **Performance:**
+- Optimized zone detection and integration
+- Reduced memory allocations during gameplay
+- Improved compatibility with other mods
 
-✅ **Compatibility:**
-- Full compatibility with Road Builder (Mod ID 87190) restored
-- Works properly with all network/road mods that deserialize save data
-- Existing saves with Universal zones now load safely without crashes
+✅ **Quality of Life:**
+- Better logging for troubleshooting
+- Enhanced mod settings interface
+- Updated localization strings
 
-**IMPORTANT:** If you experienced crashes with v1.9.2, this update fixes that. Your saves should now load properly!" />
+**Note:** This is a maintenance release focusing on stability and performance. No new features added." />
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 	<ExternalLink Type="github" Url="https://github.com/redlabracer/Universal-Zoning-System-UZS" />
 	<ExternalLink Type="discord" Url="https://discord.com/users/533715225195839519" />
