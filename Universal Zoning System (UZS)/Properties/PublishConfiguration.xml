@@ -4,85 +4,112 @@
 	<!--Name of the mod to display to players-->
 	<DisplayName Value="Universal Zoning System (UZS)" />
 	<!--Short description of the mod-->
-	<ShortDescription Value="Mix North American and European building styles in the same zones for truly diverse cities! Supports DLC zones and Zone Organizer." />
+	<ShortDescription Value="Mix North American and European building styles in the same zones for truly diverse cities! Now with Office zones! Supports DLC zones and Zone Organizer." />
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 	<LongDescription>
-# Universal Zoning System (UZS)
+		# Universal Zoning System (UZS)
 
-## ⚠️ BETA DISCLAIMER ⚠️
+		## ⚠️ BETA DISCLAIMER ⚠️
 
-**This mod is in early testing phase. Please note:**
-- Not fully tested with all game scenarios
-- May cause issues with existing savegames
-- Backup your saves before using
-- Use at your own risk
-- Please report bugs on GitHub
+		**This mod is in early testing phase. Please note:**
+		- Not fully tested with all game scenarios
+		- May cause issues with existing savegames
+		- Backup your saves before using
+		- Use at your own risk
+		- Please report bugs on GitHub
 
----
+		---
 
-## ⚠️ NOT SAFE TO REMOVE
+		## ⚠️ KNOWN ISSUE: Region Pack Compatibility
 
-**This mod CANNOT be safely removed once you have buildings in Universal zones!**
+		**If you experience crashes or disappearing buildings:**
 
-When you disable this mod, any buildings that were built in Universal zones will lose their zone assignment. This will cause:
-- Buildings to become "orphaned" without proper zoning
-- Potential save corruption or errors
-- Loss of buildings in Universal-zoned areas
+		Some users have reported issues when using multiple Region Pack mods simultaneously (Eastern Europe Pack, USA Southwest Pack, UK Pack, etc.). These packs can have texture/asset naming conflicts that cause buildings to disappear or the game to crash.
 
-**To uninstall safely:**
-1. Replace ALL Universal zones with standard NA or EU zones first
-2. Wait several in-game days for buildings to adapt
-3. Demolish any remaining Universal-zoned buildings
-4. Save your game and verify it loads correctly
-5. Only then disable the mod
+		**Workaround:**
+		- Restart the game if buildings disappear.
+		- Try disabling some Region Pack mods if you experience crashes
+		- Enable only the Region Packs you actively use
+		- Clear mod cache: `%AppData%\..\LocalLow\Colossal Order\Cities Skylines II\.cache\Mods\`
+		- This is a base game issue with how Region Packs handle assets, not specific to UZS
 
-**Once you use this mod, consider it a permanent part of your save file.**
+		**This issue affects the base game when using multiple Region Packs and is not caused by UZS.**
 
----
+		---
 
-## What does this mod do?
+		## ⚠️ NOT SAFE TO REMOVE
 
-The Universal Zoning System addresses a restriction in the base game where zoning is strictly segregated by "Theme" (North American vs. European). This segregation forces players to manually toggle themes or paint specific districts to achieve architectural variety.
+		**This mod CANNOT be safely removed once you have buildings in Universal zones!**
 
-UZS creates a unified "Universal" zoning palette. When you zone "Universal Low Density Residential," the game can randomly spawn a Victorian NA home next to a Modern EU cottage, creating organic diversity.
+		When you disable this mod, any buildings that were built in Universal zones will lose their zone assignment. This will cause:
+		- Buildings to become "orphaned" without proper zoning
+		- Potential save corruption or errors
+		- Loss of buildings in Universal-zoned areas
 
-**The mod automatically detects and integrates zoning types from:**
-- Base game themes (North American and European)
-- Region packs (e.g., Beach Properties, Urban Promenades)
-- All installed DLCs and content creator packs
-- Custom zoning types added by other mods
+		**To uninstall safely:**
+		1. Replace ALL Universal zones with standard NA or EU zones first
+		2. Wait several in-game days for buildings to adapt
+		3. Demolish any remaining Universal-zoned buildings
+		4. Save your game and verify it loads correctly
+		5. Only then disable the mod
 
----
+		**Once you use this mod, consider it a permanent part of your save file.**
 
-## Features
+		---
 
-- **8 Universal Zone Types**: New zones that accept both NA and EU buildings
-- **Automatic DLC Detection**: Works with all region packs, DLCs, and custom content
-- **Zone Organizer Compatible**: Works seamlessly with Zone Organizer by Mimonsi for enhanced zone management
-- **Customizable Probabilities**: Adjust spawn chances for different building types through mod settings
-- **No Theme Switching**: Build mixed-style neighborhoods without constantly changing themes
-- **Seamless Integration**: Works with existing saves and other mods
+		## What does this mod do?
 
----
+		The Universal Zoning System addresses a restriction in the base game where zoning is strictly segregated by "Theme" (North American vs. European). This segregation forces players to manually toggle themes or paint specific districts to achieve architectural variety.
 
-## Available Universal Zones
+		UZS creates a unified "Universal" zoning palette. When you zone "Universal Low Density Residential," the game can randomly spawn a Victorian NA home next to a Modern EU cottage, creating organic diversity.
 
-- Universal Low Density Residential
-- Universal Row Housing
-- Universal Medium Density Residential
-- Universal High Density Residential
-- Universal Low Rent Housing
-- Universal Mixed Housing
-- Universal Low Density Commercial
-- Universal High Density Commercial
+		**The mod automatically detects and integrates zoning types from:**
+		- Base game themes (North American and European)
+		- Region packs (e.g., Beach Properties, Urban Promenades)
+		- All installed DLCs and content creator packs
+		- Custom zoning types added by other mods
 
----
+		---
 
-## Compatibility
+		## Features
 
-✅ **Works with Zone Organizer by Mimonsi** - Fully compatible for enhanced zone management and organization
+		- **10 Universal Zone Types**: New zones that accept both NA and EU buildings
+		- **Automatic DLC Detection**: Works with all region packs, DLCs, and custom content
+		- **Zone Organizer Compatible**: Works seamlessly with Zone Organizer by Mimonsi for enhanced zone management
+		- **Customizable Probabilities**: Adjust spawn chances for different building types through mod settings
+		- **No Theme Switching**: Build mixed-style neighborhoods without constantly changing themes
+		- **Seamless Integration**: Works with existing saves and other mods
+		- **Smart Loading System**: Fast, crash-resistant prefab loading with automatic fallback
 
-✅ **Region Packs &amp; DLCs** - Automatically detects and integrates buildings from all installed content
+		---
+
+		## Available Universal Zones
+
+		**Residential:**
+		- Universal Low Density Residential
+		- Universal Row Housing
+		- Universal Medium Density Residential
+		- Universal High Density Residential
+		- Universal Low Rent Housing
+		- Universal Mixed Housing
+
+		**Commercial:**
+		- Universal Low Density Commercial
+		- Universal High Density Commercial
+
+		**Office:**
+		- Universal Low Density Office
+		- Universal High Density Office
+
+		---
+
+		## Compatibility
+
+		✅ **Works with Zone Organizer by Mimonsi** - Fully compatible for enhanced zone management and organization
+
+		✅ **Region Packs &amp; DLCs** - Automatically detects and integrates buildings from all installed content
+
+⚠️ **Region Pack Conflicts** - Using many Region Packs simultaneously may cause asset conflicts (base game issue, not UZS-specific)
 
 ---
 
@@ -109,6 +136,7 @@ Open the mod settings to fine-tune the probability of different building styles 
 - Potential compatibility issues with other zone mods
 - May affect game performance in large cities
 - Cannot be safely removed once buildings are placed in Universal zones
+- Multiple Region Pack mods can cause asset naming conflicts (base game issue)
 
 ---
 
@@ -117,7 +145,7 @@ Open the mod settings to fine-tune the probability of different building styles 
 Report issues on GitHub: https://github.com/redlabracer/Universal-Zoning-System-UZS
 	</LongDescription>
 	<!--Thumbnail-->
-	<Thumbnail Value="Properties/Thumbnail.png" />
+	<Thumbnail Value="C:\Users\charl\source\repos\Universal Zoning System\Universal Zoning System (UZS)\Universal Zoning System (UZS)\Properties\Thumbnail.png" />
 	<!--Screenshot, can be set multiple times-->
 	<Screenshot Value="" />
 	<!--Tag, can be set multiple times-->
@@ -125,32 +153,15 @@ Report issues on GitHub: https://github.com/redlabracer/Universal-Zoning-System-
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/universal-zoning-system-uzs.1882199/" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.9.4" />
+	<ModVersion Value="1.10.2" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.4.*" />
 	<!--Dependency for the mod, can be set multiple times-->
-	<Dependency Id="" />
+	<Dependency Id="95965" />
 	<!--Required DLC, can be set multiple times. Supported values are "Landmark Buildings", "San Fransisco Set", "Beach Properties", "Urban Promenoes", "Modern Architecture"-->
 	<RequiredDLC Value="" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-	<ChangeLog Value="**v1.9.4 - Stability and Performance Improvements**
-
-🔧 **Bug Fixes:**
-- Additional stability improvements for save game loading
-- Enhanced error handling in ZoneMergeSystem
-- Fixed edge cases in prefab cloning logic
-
-⚡ **Performance:**
-- Optimized zone detection and integration
-- Reduced memory allocations during gameplay
-- Improved compatibility with other mods
-
-✅ **Quality of Life:**
-- Better logging for troubleshooting
-- Enhanced mod settings interface
-- Updated localization strings
-
-**Note:** This is a maintenance release focusing on stability and performance. No new features added." />
+	<ChangeLog Value="/" />
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
 	<ExternalLink Type="github" Url="https://github.com/redlabracer/Universal-Zoning-System-UZS" />
 	<ExternalLink Type="discord" Url="https://discord.com/users/533715225195839519" />
